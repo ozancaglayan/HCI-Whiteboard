@@ -140,8 +140,8 @@ if __name__ == '__main__':
             cv.FindCornerSubPix (
                 grey,
                 points [1],
-                cv.Size (win_size, win_size), cv.Size (-1, -1),
-                cv.TermCriteria (cv.CV_TERMCRIT_ITER | cv.CV_TERMCRIT_EPS,
+                (win_size, win_size) (-1, -1),
+                (cv.CV_TERMCRIT_ITER | cv.CV_TERMCRIT_EPS,
                                    20, 0.03))
                                                
         elif len (points [0]) > 0:
@@ -154,20 +154,19 @@ if __name__ == '__main__':
                 (win_size, win_size), 3,
                 len (points [0]),
                 None,
-                cv.TermCriteria (cv.CV_TERMCRIT_ITER|cv.CV_TERMCRIT_EPS,
-                                   20, 0.03),
-                flags)
-            
+                (cv.CV_TERMCRIT_ITER|cv.CV_TERMCRIT_EPS,
+                                   20, 0.03),flags)
+
             # initializations
             point_counter = -1
             new_points = []
-            
+
             for the_point in points [1]:
                 # go trough all the points
 
                 # increment the counter
                 point_counter += 1
-                
+
                 if add_remove_pt:
                     # we have a point to add, so see if it is close to
                     # another one. If yes, don't use it
@@ -196,14 +195,14 @@ if __name__ == '__main__':
             
         if add_remove_pt:
             # we want to add a point
-            points [1].append (cv.PointTo32f (pt))
+            points [1].append (pt)
 
             # refine the corner locations
             points [1][-1] = cv.FindCornerSubPix (
                 grey,
                 [points [1][-1]],
-                cv.Size (win_size, win_size), cv.Size (-1, -1),
-                cv.TermCriteria (cv.CV_TERMCRIT_ITER | cv.CV_TERMCRIT_EPS,
+                (win_size, win_size), (-1, -1),
+                (cv.CV_TERMCRIT_ITER | cv.CV_TERMCRIT_EPS,
                                    20, 0.03))[0]
 
             # we are no more in "add_remove_pt" mode

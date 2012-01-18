@@ -20,7 +20,6 @@ image = None
 pt = None
 add_remove_pt = False
 flags = 0
-night_mode = False
 need_to_init = False
 
 #############################################################################
@@ -32,38 +31,31 @@ def on_mouse (event, x, y, flags, param):
     # we will use the global pt and add_remove_pt
     global pt
     global add_remove_pt
-    
-    if image is None:
-        # not initialized, so skip
-        return
 
-    if image.origin != 0:
-        # different origin
-        y = image.height - y
+    if image:
+        if image.origin != 0:
+            # different origin
+            y = image.height - y
 
-    if event == cv.CV_EVENT_LBUTTONDOWN:
-        # user has click, so memorize it
-        pt = (x, y)
-        add_remove_pt = True
+        if event == cv.CV_EVENT_LBUTTONDOWN:
+            # user has click, so memorize it
+            pt = (x, y)
+            add_remove_pt = True
 
 #############################################################################
 # so, here is the main part of the program
 
 if __name__ == '__main__':
 
-    frames = sys.argv[1:]
-    if frames == []:
-      print "usage lkdemo.py <image files>"
-      sys.exit(1)
-
     # display a small howto use it
     print "Hot keys: \n" \
           "\tESC - quit the program\n" \
           "\tr - auto-initialize tracking\n" \
           "\tc - delete all the points\n" \
-          "\tn - switch the \"night\" mode on/off\n" \
           "\tSPACE - next frame\n" \
           "To add/remove a feature point click it\n"
+
+    capture = cv.CreateCameraCapture(1)
 
     # first, create the necessary windows
     cv.NamedWindow ('LkDemo', cv.CV_WINDOW_AUTOSIZE)
@@ -72,12 +64,14 @@ if __name__ == '__main__':
     cv.SetMouseCallback ('LkDemo', on_mouse, None)
 
     fc = 0
+
     while 1:
         # do forever
 
-        frame = cv.LoadImage(frames[fc])
+        # Get a frame
+        frame = cv.QueryFrame (capture)
 
-        if image is None:
+        if not image:
             # create the images we need
             image = cv.CreateImage (cv.GetSize (frame), 8, 3)
             image.origin = frame.origin
@@ -92,10 +86,6 @@ if __name__ == '__main__':
 
         # create a grey version of the image
         cv.CvtColor (image, grey, cv.CV_BGR2GRAY)
-
-        if night_mode:
-            # night mode: only display the points
-            cv.SetZero (image)
 
         if need_to_init:
             # we want to search all the good points
@@ -149,7 +139,7 @@ if __name__ == '__main__':
             # draw the points as green circles
             for the_point in features:
                 cv.Circle (image, (int(the_point[0]), int(the_point[1])), 3, (0, 255, 0, 0), -1, 8, 0)
-            
+
         if add_remove_pt:
             # we want to add a point
             # refine this corner location and append it to 'features'
@@ -167,7 +157,7 @@ if __name__ == '__main__':
         prev_grey, grey = grey, prev_grey
         prev_pyramid, pyramid = pyramid, prev_pyramid
         need_to_init = False
-        
+
         # we can now display the image
         cv.ShowImage ('LkDemo', image)
 
@@ -175,7 +165,7 @@ if __name__ == '__main__':
         c = cv.WaitKey(10) % 0x100
 
         if c == 27:
-            # user has press the ESC key, so exit
+            # user pressed the ESC key, so exit
             break
 
         # processing depending on the character
@@ -185,7 +175,5 @@ if __name__ == '__main__':
               need_to_init = True
           elif cc == 'c':
               features = []
-          elif cc == 'n':
-              night_mode = not night_mode
           elif cc == ' ':
               fc = (fc + 1) % len(frames)
